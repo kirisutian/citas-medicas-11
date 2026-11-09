@@ -1,0 +1,33 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            # ---------- RUTA 1: hacia servicio-a ----------
+            # El contexto público (/api) lo pone el Gateway; servicio-a solo conoce /saludo
+            - id: ruta-servicio-a
+              uri: lb://servicio-a
+              predicates:
+                - Path=/api/saludo/**
+              filters:
+                - StripPrefix=1
+
+            - id: ruta-medicos
+              uri: lb://medicos
+              predicates:
+                - Path=/api/medicos/**
+              filters:
+                - StripPrefix=2
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true   # Registrarse con la IP y no con el nombre de host
