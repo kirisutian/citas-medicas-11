@@ -31,6 +31,9 @@ public class CitaServiceImpl implements CitaService {
 
     private final MedicoClient medicoClient;
 
+    private final List<EstadoCita> ESTADOS_ACTIVOS_INVALIDOS =
+            List.of(EstadoCita.CONFIRMADA, EstadoCita.EN_CURSO);
+
     @Override
     @Transactional(readOnly = true)
     public List<CitaResponse> listar() {
@@ -54,6 +57,19 @@ public class CitaServiceImpl implements CitaService {
         return citaMapper.entidadAResponse(cita,
                 null,
                 obtenerMedicoSinEstado(cita.getIdMedico()));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void medicoTieneCitasAsignadas(Long idMedico) {
+
+        log.info("Validando si el médico tiene una cita activa con los estados: {}",
+                ESTADOS_ACTIVOS_INVALIDOS);
+
+        if (citaRepository.existsByIdMedicoAndEstadoRegistroAndEstadoCitaIn(
+                idMedico, EstadoRegistro.ACTIVO, ESTADOS_ACTIVOS_INVALIDOS))
+            throw new ConflictoException("No se puede modificar o eliminar el médico ya que " +
+                    "tiene citas en estado: " + ESTADOS_ACTIVOS_INVALIDOS);
     }
 
     @Override
