@@ -38,6 +38,19 @@ public class CitaMapper implements CommonMapper<CitaRequest, CitaResponse, Cita>
         );
     }
 
+    public CitaResponse entidadAResponse(Cita entidad, PacienteResponse paciente, MedicoResponse medico) {
+        return entidad == null
+                ? null
+                : new CitaResponse(
+                    entidad.getId(),
+                    pacienteResponseADatosPaciente(paciente),
+                    medicoResponseADatosMedico(medico),
+                    entidad.getFechaCita(),
+                    entidad.getSintomas(),
+                    entidad.getEstadoCita().getDescripcion()
+        );
+    }
+
     private DatosPaciente pacienteResponseADatosPaciente(PacienteResponse paciente) {
         return paciente == null
                 ? null

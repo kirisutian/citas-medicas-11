@@ -1,5 +1,6 @@
 package com.christian.commons.exceptions;
 
+import feign.RetryableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.*;
@@ -84,6 +85,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 HttpStatus.BAD_REQUEST, "Uno o más parámetros no son válidos.");
         pd.setProperty("errores", errores);
         return handleExceptionInternal(e, pd, headers, status, request);
+    }
+
+    // 503: el servicio remoto está caído o no responde
+    @ExceptionHandler({ServicioNoDisponibleException.class, RetryableException.class})
+    public ProblemDetail handleServicioNoDisponible(Exception e) {
+        log.error("Servicio remoto no disponible", e);
+        return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
+                "Un servicio requerido no está disponible. Intente más tarde.");
     }
 
     // ---------- Red de seguridad ----------
