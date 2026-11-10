@@ -1,12 +1,12 @@
 package com.christian.medicos.service;
 
+import com.christian.commons.clients.CitaClient;
 import com.christian.commons.dto.medicos.MedicoRequest;
 import com.christian.commons.dto.medicos.MedicoResponse;
 import com.christian.commons.enums.DisponibilidadMedico;
 import com.christian.commons.enums.EspecialidadMedico;
 import com.christian.commons.enums.EstadoRegistro;
 import com.christian.commons.exceptions.ConflictoException;
-import com.christian.commons.exceptions.DatoInvalidoException;
 import com.christian.commons.exceptions.RecursoNoEncontradoException;
 import com.christian.medicos.entity.Medico;
 import com.christian.medicos.mapper.MedicoMapper;
@@ -27,6 +27,8 @@ public class MedicoServiceImpl implements MedicoService {
     private final MedicoRepository medicoRepository;
 
     private final MedicoMapper medicoMapper;
+
+    private final CitaClient citaClient;
 
     @Override
     @Transactional(readOnly = true)
@@ -80,6 +82,8 @@ public class MedicoServiceImpl implements MedicoService {
 
         Medico medico = obtenerMedicoActivoPorId(id);
 
+        validarMedicoTieneCitasAgendadas(id);
+
         validarCambiosUnicos(request, id);
 
         log.info("Actualizando médico con id: {}", id);
@@ -127,6 +131,8 @@ public class MedicoServiceImpl implements MedicoService {
         Medico medico = obtenerMedicoActivoPorId(id);
 
         log.info("Crucificando al médico con id: {}", id);
+
+        validarMedicoTieneCitasAgendadas(id);
 
         medico.eliminar();
 
@@ -192,5 +198,13 @@ public class MedicoServiceImpl implements MedicoService {
             throw new ConflictoException(
                     "Ya existe un médico activo registrado con la cédula profesional: "
                             + request.cedulaProfesional());
+    }
+
+    private void validarMedicoTieneCitasAgendadas(Long id) {
+
+        log.info("Validando si el médico con id {} " +
+                "tiene citas agendadas en servicio remoto...", id);
+
+        citaClient.medicoTieneCitasAsignadas(id);
     }
 }
