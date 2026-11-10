@@ -10,7 +10,7 @@ spring:
         webflux:
           routes:
             # ---------- RUTA 1: hacia servicio-a ----------
-            # El contexto público (/api) lo pone el Gateway; servicio-a solo conoce /saludo
+            # El contexto pï¿½blico (/api) lo pone el Gateway; servicio-a solo conoce /saludo
             - id: ruta-servicio-a
               uri: lb://servicio-a
               predicates:
@@ -22,6 +22,13 @@ spring:
               uri: lb://medicos
               predicates:
                 - Path=/api/medicos/**
+              filters:
+                - StripPrefix=2
+
+            - id: ruta-citas
+              uri: lb://citas
+              predicates:
+                - Path=/api/citas/**
               filters:
                 - StripPrefix=2
 
